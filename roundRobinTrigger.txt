@@ -1,0 +1,74 @@
+trigger roundRobin on Lead (before insert, after insert) {
+    List<Contact> contactList = [SELECT Id, Email, AccountId FROM Contact];
+    Map<String, Contact> contactMap = new Map<String, Contact>();
+    List<String> EmailList = new List<String>();
+    
+    for(Contact contact : contactList){
+        contactMap.put(contact.Email, contact);
+        EmailList.add(contact.Email);
+    }
+    
+    if(Trigger.isInsert && Trigger.isBefore){
+        roundRobinHandler.changeOwner(Trigger.new, contactMap, EmailList);
+    }
+    
+    if(Trigger.isInsert && Trigger.isAfter){
+        roundRobinHandler.leadCovert(Trigger.new, contactMap, EmailList);
+    }
+}
+
+==========================================================================================================================
+Handler Part:--
+
+public class roundRobinHandler {
+    public static void changeOwner(List<Lead> leadList, Map<String, Contact> contactMap, List<String> EmailList){
+        List<Group> queues = [SELECT Id,(SELECT Id, UserOrGroupId FROM GroupMembers Order By ID ASC) FROM Group WHERE Type = 'Queue' AND DeveloperName = 'Lead_Queue'];
+        Lead_Round_Robin_Assignment__c leadAssignment = Lead_Round_Robin_Assignment__c.getOrgDefaults();
+        
+        Integer orderNumber = (leadAssignment.get('Order_Number__c') == null || Integer.valueOf(leadAssignment.get('Order_Number__c')) < -1) ? -1 : Integer.valueOf(leadAssignment.get('Order_Number__c'));
+        
+        if (queues.size() > 0 && queues.get(0).GroupMembers.size() > 0) {
+            List<GroupMember> groupMembers = queues.get(0).GroupMembers;
+            List<Id> userIds = new List<Id>();
+            for(GroupMember groupMember : groupMembers){
+                userIds.add(groupMember.UserOrGroupId);
+            }
+            
+            Integer groupMemberSize = queues.get(0).GroupMembers.size();
+
+            for (Lead lead : leadList) {
+                if (lead.Industry == 'Technology' && lead.LeadSource == 'Web' && !userIds.contains(lead.OwnerId)) {
+                    if((lead.Email != '' || lead.Email != null) && !EmailList.contains(lead.Email)){
+                        Integer leadUserIndex =  (orderNumber + 1) >= groupMemberSize ? 0 : orderNumber + 1;
+                        lead.OwnerId = queues.get(0).GroupMembers.get(leadUserIndex).UserOrGroupId;
+                        lead.Lead_Convert__c = true;
+                        orderNumber = leadUserIndex;
+                    }
+                }
+            }
+            
+            leadAssignment.Order_Number__c = orderNumber;
+            update leadAssignment;
+        }
+    }
+    
+    public static void leadCovert(List<Lead> leadList, Map<String, Contact> contactMap, List<String> EmailList){
+        for(Lead lead : leadList){
+            if(lead.Industry == 'Technology' && lead.LeadSource == 'Web' && lead.Lead_Convert__c != null && EmailList.contains(lead.Email)){
+                Database.LeadConvert leadConvert = new Database.LeadConvert();
+                leadConvert.setLeadId(lead.Id);
+                leadConvert.setAccountId(contactMap.get(lead.Email).AccountId);
+                leadConvert.setContactId(contactMap.get(lead.Email).Id);
+                
+                LeadStatus convertStatus = [SELECT Id, MasterLabel, IsConverted FROM LeadStatus WHERE IsConverted=true limit 1];
+        		leadConvert.setConvertedStatus(convertStatus.MasterLabel);
+                
+                try{
+                    Database.LeadConvertResult leadConvertResult = Database.convertLead(leadConvert);
+                }Catch(Exception exp){
+                    contactMap.get(lead.Email).addError(exp.getMessage());
+                }
+            }
+        }
+    }     
+}

@@ -1,0 +1,19 @@
+@isTest
+public class MyTestClass {
+	static testmethod void myUnitTest() {
+        Account account = TestDataFactory.createAccount(true);
+        system.assertNotEquals(null, account);
+        Lead_Round_Robin_Assignment__c leadAssignment = TestDataFactory.createCustomSetting(true);
+        system.assertNotEquals(null, leadAssignment);
+        List<Contact> contact = TestDataFactory.createContact(true,account.Id);
+        system.assertNotEquals(null, contact);
+        
+        Test.startTest();
+        Lead positiveLead = TestDataFactory.createLead(true);
+        system.assertNotEquals(null, positiveLead);
+        Lead negativeLead = TestDataFactory.negativeLead(true);
+        system.assertNotEquals(null, negativeLead);
+        TestDataFactory.convertLead(negativeLead, contact);
+        Test.stopTest();
+    }
+}
