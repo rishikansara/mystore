@@ -1,0 +1,38 @@
+Public with sharing class RK_QueryPracticeController{
+    
+    // This is first method
+    Public static List<Object> getRelatedRecords(String accId,String accPhone,String accName){
+        List<Object> objList;
+        objList = [SELECT Id,Name,
+                               (SELECT Id FROM Contacts),
+                               (SELECT Id,Name FROM Opportunities) 
+                               FROM Account 
+                               WHERE Id =:accId OR Phone =:accPhone OR Name like:accName WITH SECURITY_ENFORCED]; 
+        
+        return objList;
+    }
+
+    // This is second method
+	Public static List<List <sObject>> soslDemo_method(String searchStr){
+        List<List <sObject>> searchList;
+		if(searchStr.length() > 1){// In SOSL, minimum length should be more than one character.
+			String searchStr1 = '*'+searchStr+'*';
+            String stageName = 'Closed Lost';
+			String searchQuery = 'FIND \'' + searchStr1 + '\' IN ALL FIELDS RETURNING  Account (Id,Name,type),Contact(name,Department,Title),Opportunity(name,StageName WHERE StageName!=\''+stageName+'\')';
+			searchList = search.query(searchQuery);
+		}else{
+            System.debug('Please enter at least two characters..');
+		}
+        return searchList;
+	}
+    
+    // This is third method
+    public static List<sObject> schemaRecords(String objectName){
+        Map<String , Schema.SObjectType> globalDescript = Schema.getGlobalDescribe();
+        Schema.sObjectType objName = globalDescript.get(objectName);        
+        String Query = 'SELECT Id, Name FROM '+ objName +' WITH SECURITY_ENFORCED ORDER BY createdDate DESC LIMIT 100';      
+        List<sObject> recordList = Database.query(Query);
+        System.debug('recordList:- '+recordList);
+        return recordList;
+     }
+}
