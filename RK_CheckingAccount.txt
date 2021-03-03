@@ -1,0 +1,56 @@
+public class RK_CheckingAccount implements RK_BankAccount{
+    private double balance = 0;
+    private static final Integer FREE_TRANSACTIONS = 5;
+    public Integer transactionCount = 0;
+    private static final double TRANSACTION_FEE = 0.50;
+    private String Name = '';
+	private Integer accNo;
+    
+	//Bank Account details
+    public void accountDetails(String Name, Integer accNo, double balance){
+        if(Name != null && accNo != null && balance != null){
+         	this.Name = Name;
+            this.accNo = accNo;
+            this.balance = balance;   
+        }
+    }
+    
+    //Deposit money
+    public void deposit(double amount){
+        if(amount <= 0){
+            system.debug('Invalid Amount');
+        }else{
+         	balance = balance + amount;
+            transactionCount++;
+            system.debug('Your balance is after deposit: '+balance);
+        }
+	}
+
+    //withdraw money
+	public void withdraw(double amount){
+        if(balance < amount){
+            system.debug('Not sufficient balance.');
+        }else if(amount <= 0){
+            system.debug('Invalid Amount');
+        }else{
+            balance = balance - amount;
+            transactionCount++;
+            system.debug('Your balance is after withdraw: '+balance);
+        }
+	}
+    
+    //Charge transaction fees
+    public void deductFees() {
+        if (transactionCount > FREE_TRANSACTIONS) {
+            double fee = TRANSACTION_FEE * (transactionCount - FREE_TRANSACTIONS);
+            withdraw(fee);
+        }
+        transactionCount = 0; // Start over because new time period.
+    }
+    
+    public Double getBalance(){
+        system.debug('Your balance is: '+balance);
+        return balance;
+    }
+    
+}

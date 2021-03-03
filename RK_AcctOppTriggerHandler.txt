@@ -1,0 +1,15 @@
+public class RK_AcctOppTriggerHandler {
+    public static void AccountPreventdeletion(Map<Id,Account> accountMap){
+        // Get the account which related opportunities are open
+        for(Account account : [SELECT Id FROM Account WHERE Id IN 
+                                                      (SELECT AccountId FROM Opportunity WHERE AccountId =:accountMap.keySet() AND 
+                                                       										   IsClosed = False AND
+                                                      										   StageName !='Closed Won' AND 
+                                                       										   StageName !='Closed Lost')]){
+            if(account!=null){
+               // Gives an error message.
+               accountMap.get(account.Id).addError('You can not delete this Account because opportunity is open');                                                                                        
+            }
+        }
+    }
+}

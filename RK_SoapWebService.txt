@@ -1,0 +1,50 @@
+global class RK_SoapWebService {
+    
+    //WebService member variables
+	global class leadAttribute {
+        webservice String lastName;
+        webservice String firstName;
+        webservice String email;
+        webservice String leadSource;
+        webservice String company;
+    }
+    
+    //WebService Method which create the lead 
+    webservice static List<Lead> createLead(List<leadAttribute> leadItem) {
+        List<Lead> getLeadList = new List<Lead>();
+        Map<String,Lead> leadMap = new Map<String,Lead>();
+        List<Lead> leadList = new List<Lead>();
+        getLeadList = [SELECT Id, FirstName, LastName, Email, LeadSource, Company FROM Lead];
+        if(getLeadList.size()>0){
+            for(Lead lead : getLeadList){
+            	String keyLead = lead.FirstName+'_'+lead.LastName+'_'+lead.Company;
+                leadMap.put(keyLead,lead);
+            }
+        }
+        
+        for(leadAttribute leadAttr : leadItem){
+           // Check if lastname, firstname and company of lead is already exists or not
+           if(leadAttr.lastName != null &&leadAttr.firstName != null && leadAttr.company != null && 
+              !leadMap.containsKey(leadAttr.firstName+'_'+lead.lastName+'_'+lead.company) ){
+                  
+                  Lead lead = new Lead();
+                  lead.firstName = leadAttr.firstName;
+                  lead.LastName = leadAttr.lastName;
+                  lead.Email = leadAttr.email;
+                  lead.LeadSource = leadAttr.leadSource;
+                  lead.Company = leadAttr.company;
+                  leadList.add(lead);
+           } 
+        }
+        if(leadList.size()>0){
+            try{
+                insert leadList;
+                return leadList;
+            }catch(System.DmlException e){
+                System.debug('@@insertion failed: '+e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+}

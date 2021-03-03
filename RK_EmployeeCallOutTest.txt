@@ -1,0 +1,65 @@
+@isTest
+global class RK_EmployeeCallOutTest {
+    //Call Create single employee method
+    @isTest static void singlePostCallOut() {
+         // Set mock callout class 
+        Test.setMock(HttpCalloutMock.class, new RK_EmployeeCallOutMock());
+        RK_EmployeeCallOut.wrapperClass wp = new RK_EmployeeCallOut.wrapperClass('Employee Testing','91752465232','01/01/2020','Software Developer','Ahmedabad','Information technology','Senior','Full Time','adc@gmail.com');
+        HttpResponse response = RK_EmployeeCallOut.createSingleEmployee(wp);
+        
+        String contentType = response.getHeader('Content-Type');
+        System.assert(contentType == 'application/json');
+        String actualValue = response.getBody();
+        String expectedValue = '{"status":"success","message":"Inserted Employee","id":"1"}';
+        System.assertEquals(actualValue, expectedValue);
+        System.assertEquals(200, response.getStatusCode());
+    }
+    
+    //Call create multiple employees method
+    @isTest static void multiplePostCallOut() {
+        // Set mock callout class 
+        Test.setMock(HttpCalloutMock.class, new RK_EmployeeCallOutMock());
+        
+        RK_EmployeeCallOut.wrapperClass wp = new RK_EmployeeCallOut.wrapperClass('Employee Testing','91752465232','01/01/2020','Software Developer','Ahmedabad','Information technology','Senior','Full Time','adc@gmail.com');
+        List<RK_EmployeeCallOut.wrapperClass> multipleEmployees = new List<RK_EmployeeCallOut.wrapperClass>();
+        multipleEmployees.add(wp);
+        HttpResponse response = RK_EmployeeCallOut.createMultipleEmployee(multipleEmployees);
+        
+        String contentType = response.getHeader('Content-Type');
+        System.assert(contentType == 'application/json');
+        String actualValue = response.getBody();
+        String expectedValue = '{"status":"success","message":"Inserted Employee","id":"1"}';
+        System.assertEquals(actualValue, expectedValue);
+        System.assertEquals(200, response.getStatusCode());
+    }
+    
+    //Call get all employees method
+    @isTest static void getMultipleEmployeesCallOut() {
+        // Set mock callout class 
+        Test.setMock(HttpCalloutMock.class, new RK_EmployeeCallOutMock());
+        
+        HttpResponse response = RK_EmployeeCallOut.getEmployees();
+        
+        String contentType = response.getHeader('Content-Type');
+        System.assert(contentType == 'application/json');
+        String actualValue = response.getBody();
+        String expectedValue = '[{"_id":"1","name":"Employee Testing","phone":"91752465232","hire_date":"05/29/2018","position":"dba","functional_area":"Information Technology","location":"Ahmedabad","type":"Full Time","_user":"6012859f5f396a00148ff1d9","email":"mary@jane.com"}]';
+        System.assertEquals(actualValue, expectedValue);
+        System.assertEquals(200, response.getStatusCode());
+    }
+    
+    //Call get single employee method
+    @isTest static void getSingleEmployeesCallOut() {
+        // Set mock callout class 
+        Test.setMock(HttpCalloutMock.class, new RK_EmployeeCallOutMock());
+        
+        HttpResponse response = RK_EmployeeCallOut.getEmployee('1');
+        
+        String contentType = response.getHeader('Content-Type');
+        System.assert(contentType == 'application/json');
+        String actualValue = response.getBody();
+        String expectedValue = '{"_id":"1","name":"Employee Testing","phone":"91752465232","hire_date":"05/29/2018","position":"dba","functional_area":"Information Technology","location":"Ahmedabad","type":"Full Time","_user":"6012859f5f396a00148ff1d9","email":"mary@jane.com"}';
+        System.assertEquals(actualValue, expectedValue);
+        System.assertEquals(200, response.getStatusCode());
+    }
+}

@@ -1,0 +1,6 @@
+global class RK_OpportunityBatchSchedule {
+    global void execute(SchedulableContext sc) {
+        RK_OpportunityBatch opportunityBatch = new RK_OpportunityBatch('Qualification');
+        database.executebatch(opportunityBatch);
+    }
+}

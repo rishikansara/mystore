@@ -1,0 +1,8 @@
+We can use the workflow rule and we can send an email from that but we need to create the email template and emailalert
+and also we need to pass the static value for that because we can not get related records.
+
+I have used autolaunchedflow why flow because its help us to send an email from that and we can create the dynamic email body. 
+Second thing in which our scenario we need to get the related records so that related records we can get into the flow that
+are not possible in workflowrule and also in this we can send Email to selected users only.
+
+So thats why I have used Autolaunched flow which is called from prcocess builder.

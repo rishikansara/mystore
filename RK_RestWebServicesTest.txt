@@ -1,0 +1,99 @@
+@isTest
+public class RK_RestWebServicesTest {
+	// Setup method to insert the data
+    @testSetup static void setup() {
+        Account account = new Account();
+        account.Name = 'TestAccount';
+        account.Phone = '9378297983';
+        account.Email__c = 'abc@gmail.com';
+         
+        insert account;
+        
+        Account testAccount = new Account();
+        testAccount.Name = 'TestAccount1';
+        testAccount.Phone = '9378297983';
+        testAccount.Email__c = 'abc@gmail.com';
+         
+        insert testAccount;
+        
+        List<Contact> contactList = new List<Contact>();
+        Contact oneContact = new Contact();
+        oneContact.LastName = 'TestContact';
+        oneContact.AccountId = account.Id;
+        oneContact.Phone = '984255600';
+        oneContact.Email = 'xyz@gmail.com';
+        contactList.add(oneContact);
+        
+        Contact twoContact = new Contact();
+        twoContact.LastName = 'TestContact1';
+        twoContact.AccountId = account.Id;
+        twoContact.Phone = '984255600';
+        twoContact.Email = 'xyz@gmail.com';
+        contactList.add(twoContact);
+         
+        insert contactList;
+    }
+    
+    // Call HttpGet method
+    @isTest static void testgetContacts() {
+        Account account = [SELECT Id, Name, Phone, Email__c FROM Account WHERE Name='TestAccount'];
+        System.assert(account != null);
+        
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        String baseURL = system.URL.getSalesforceBaseUrl().toExternalForm();
+        request.requestUri = baseURL+'/services/apexrest/RestServiceExample/'+account.Name;
+        request.httpMethod = 'GET';
+        RestContext.request = request;
+        RestContext.response = res;
+        
+        List<Contact> contactList = RK_RestWebServices.getContacts();
+        System.assert(contactList.size()>0);
+        
+        Account testAccount = [SELECT Id, Name, Phone, Email__c FROM Account WHERE Name='TestAccount1'];
+        System.assert(testAccount != null);
+        
+        RestRequest request1 = new RestRequest();
+        request1.requestUri = baseURL+'/services/apexrest/RestServiceExample/'+testAccount.Name;
+        request1.httpMethod = 'GET';
+        RestContext.request = request1;
+        
+        List<Contact> contactList1 = RK_RestWebServices.getContacts();
+        System.assert(contactList1 == null);
+    }
+    
+    // Call the HttpPost method
+    @isTest static void testcreateContact() {
+        RestResponse res = new RestResponse();
+        RestContext.response = res;
+        RK_RestWebServices.contactAttribute contactVariable = new RK_RestWebServices.contactAttribute();
+        List<RK_RestWebServices.contactAttribute> contactAttributeList = new List<RK_RestWebServices.contactAttribute>();
+        contactVariable.name = 'Test';
+        contactVariable.email = 'test@gmail.com';
+        contactVariable.phone = '9173468932';
+        contactAttributeList.add(contactVariable);
+        List<Contact> contactList = RK_RestWebServices.createContact(contactAttributeList);
+        System.assert(contactList.size()>0);
+    }
+    
+    // Call the HttpPatch method
+    @isTest static void testupdateContactFields() {
+        Account account = [SELECT Id, Name, Phone, Email__c FROM Account WHERE Name='TestAccount'];
+        System.assert(account != null);
+        
+        Contact cont = [SELECT Id, Name, Phone, Email FROM Contact WHERE Name='TestContact'];
+        
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        String baseURL = system.URL.getSalesforceBaseUrl().toExternalForm();
+        request.requestUri = baseURL+'/services/apexrest/RestServiceExample/'+cont.Id;
+        request.httpMethod = 'PATCH';
+        RestContext.request = request;
+        RestContext.response = res;
+        
+        Contact contact = RK_RestWebServices.updateContactFields('TestAccount1','Test Contact','xyz@gmail.com');
+        System.assert(contact != null);
+        System.assertEquals(contact.LastName, 'Test Contact');
+        System.assertEquals(contact.Email, 'xyz@gmail.com');
+    }
+}

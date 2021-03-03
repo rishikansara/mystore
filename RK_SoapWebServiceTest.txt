@@ -1,0 +1,44 @@
+@isTest
+public class RK_SoapWebServiceTest {
+    // Setup method to insert the data
+    @testSetup static void setup() {
+        Lead lead = new Lead();
+        lead.lastName = 'TestSoapWebService';
+        lead.firstName = 'TestFirstSOAPAPI';
+        lead.email = 'test@gmail.com';
+        lead.leadSource = 'Web';
+        lead.company = 'testSOAPCompany';
+        
+        insert lead;
+    }
+    
+    // Cover the if part
+	testMethod static void testLeadCreate() {
+        //Initialize member variable
+        RK_SoapWebService.leadAttribute leadVarible = new RK_SoapWebService.leadAttribute();
+        List<RK_SoapWebService.leadAttribute> leadAttributeList = new List<RK_SoapWebService.leadAttribute>();
+        leadVarible.lastName = 'TestSoapAPIs';
+        leadVarible.firstName = 'TestFirstSOAPAPI';
+        leadVarible.email = 'test@gmail.com';
+        leadVarible.leadSource = 'Web';
+        leadVarible.company = 'testSOAPCompany';
+        leadAttributeList.add(leadVarible);
+        List<Lead> leadListIds = RK_SoapWebService.createLead(leadAttributeList);
+        System.assert(leadListIds.size()>0);
+    }
+    
+    // Cover the else part
+    testMethod static void testLeadReturn() {
+        //Initialize member variable
+        RK_SoapWebService.leadAttribute leadVarible = new RK_SoapWebService.leadAttribute();
+        List<RK_SoapWebService.leadAttribute> leadAttributeList = new List<RK_SoapWebService.leadAttribute>();
+        leadVarible.lastName = 'TestSoapWebService';
+        leadVarible.firstName = 'TestFirstSOAPAPI';
+        leadVarible.email = 'test@gmail.com';
+        leadVarible.leadSource = 'Web';
+        leadVarible.company = 'testSOAPCompany';
+        leadAttributeList.add(leadVarible);
+        List<Lead> leadListIds = RK_SoapWebService.createLead(leadAttributeList);
+        System.assert(leadListIds.size()==1);
+    }
+}

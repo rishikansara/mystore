@@ -1,0 +1,57 @@
+public class RK_SavingAccount implements RK_BankAccount {
+	private double balance = 0;
+	private static double interestRate = 2.70;
+    private String Name = '';
+	private Integer accNo;
+
+	public RK_SavingAccount(){
+        
+	}
+    
+    //Bank Account details
+    public void accountDetails(String Name, Integer accNo, double balance){
+        if(Name != null && accNo != null && balance != null){
+         	this.Name = Name;
+            this.accNo = accNo;
+            this.balance = balance;   
+        }
+    }
+    
+    //Deposit money
+    public void deposit(double amount){
+        if(amount < 0){
+            system.debug('Invalid Amount');
+        }else{
+         	balance = balance + amount;
+            system.debug('Your balance is after deposit: '+balance);
+        }
+	}
+
+    //withdraw money
+	public void withdraw(double amount){
+        if(balance < amount){
+            system.debug('Not sufficient balance.');
+        }else if(amount < 0){
+            system.debug('Invalid Amount');
+        }else{
+            balance = balance - amount;
+            system.debug('Your balance is after withdraw: '+balance);
+        }
+	}
+    
+    //Add monthly interest rate
+    public void addMonthlyInterestRate(){
+        balance += ((interestRate/12) * balance);
+        system.debug('Your balance is after adding monthly interest rate: '+balance);
+    }
+    
+    //Modified interest rate
+    public static void modifiedInterestRate(double rate){
+        interestRate = rate/100;
+    }
+    
+    public Double getBalance(){
+        system.debug('Your balance is: '+balance);
+        return balance;
+    }
+}

@@ -1,0 +1,6 @@
+trigger RK_AcctOppTrigger on Account (before delete, before insert, before update, after delete, after insert, after update, after undelete) {
+    // Context variable of trigger
+    if(Trigger.isDelete && Trigger.isBefore){ 
+        RK_AcctOppTriggerHandler.AccountPreventdeletion(Trigger.oldMap);
+    }
+}

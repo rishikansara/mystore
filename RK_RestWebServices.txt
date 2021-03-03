@@ -1,0 +1,118 @@
+@RestResource(urlMapping='/RestServiceExample/*')
+global class RK_RestWebServices {
+    
+    global class contactAttribute {
+       public String name;
+       public String phone;
+       public String email;
+    }
+	
+    // Get the contacts records
+    @HttpGet
+    global static List<Contact> getContacts(){
+        RestRequest request = RestContext.request;
+		RestResponse res = RestContext.response;
+        String accountName = request.requestURI.substring(request.requestURI.lastIndexOf('/')+1);
+		if(accountName!=NULL){
+			try{
+				List<Contact> contactList = [SELECT Id,LastName,Phone,Email,Account.Name 
+											 FROM Contact 
+											 WHERE Account.Name =:accountName];
+				if(contactList.size()>0){
+					res.responseBody = Blob.valueOf(JSON.serialize(contactList));
+					res.statusCode = 200;
+					return contactList;   
+				}else{
+					return null;
+				}   
+			}catch(Exception e){
+				res.responseBody = Blob.valueOf(e.getMessage());
+                res.statusCode = 500;
+				System.debug('@@Error to retrieve the contact records '+e.getMessage());
+				return null;
+			}
+		}
+        return null;
+    }
+    
+    // Create the contact record
+    @HttpPost
+    global static List<Contact> createContact(List<contactAttribute> contactItem){
+		String inName ='';
+        String inphone='';
+        String inemail ='';
+		
+		RestResponse res = RestContext.response;
+        List<Contact> conList = new List<Contact>();
+		
+        for(contactAttribute conAttr : contactItem){
+            if(conAttr.name!=NULL) inName = String.escapeSingleQuotes(conAttr.name);
+            if(conAttr.phone!=NULL) inphone = String.escapeSingleQuotes(conAttr.phone);
+            if(conAttr.email!=NULL) inemail = String.escapeSingleQuotes(conAttr.email);
+            
+            Contact contact = new Contact();
+            contact.LastName = inName;
+            contact.Phone = inphone;
+            contact.Email = inemail;
+            conList.add(contact);
+        }
+        
+        if(conList.size()>0){
+            try{
+                insert conList;  
+                String resMessage = 'Inserted Contact: '+contact.LastName+' ID: '+contact.Id;
+                res.responseBody = Blob.valueOf(resMessage);
+                res.statusCode = 200;
+                return conList;
+            }catch(System.DmlException e){
+                res.responseBody = Blob.valueOf(e.getMessage());
+                res.statusCode = 500;
+                System.debug('@@Insertion failed :- '+e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    // Update the Contact records
+    @HttpPatch
+    global static Contact updateContactFields(String accountName,String lastName, String email) {
+        RestRequest request = RestContext.request;
+		RestResponse res = RestContext.response;
+        
+        String inaccountName = '';
+        String inlastName = '';
+        String inemail = '';
+		
+		if(accountName!=NULL) inaccountName = String.escapeSingleQuotes(accountName);
+        if(lastName!=NULL) inlastName = String.escapeSingleQuotes(lastName);
+        if(email!=NULL) inemail = String.escapeSingleQuotes(email);
+		
+        String contactId = request.requestURI.substring(request.requestURI.lastIndexOf('/')+1);
+
+        Contact contact = [SELECT Id,LastName,Account.Name, AccountId, Description, Account.Phone
+                                     FROM Contact 
+                                     WHERE Id = :contactId];
+        Account account = [SELECT Id,Name FROM Account WHERE Name =:accountName];
+        
+        contact.LastName = inlastName;
+        contact.Email = inemail;
+        contact.AccountId = account.Id;
+        contact.Description = 'Update contact from Rest Service';
+        contact.Flag_Email__c = true;	
+        contact.Phone = contact.Account.Phone;
+        
+        try{
+            update contact;
+			String resMessage = 'Updated Contact: '+contact.LastName+' ID: '+contact.Id;
+            res.responseBody = Blob.valueOf(resMessage);
+            res.statusCode = 200;
+            return contact;   
+        }catch(System.DmlException e){
+			res.responseBody = Blob.valueOf(e.getMessage());
+            res.statusCode = 500;
+            System.debug('@@Update failed: '+e.getMessage());
+            return null;
+        }
+    }
+}

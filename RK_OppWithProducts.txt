@@ -1,0 +1,74 @@
+<apex:page standardController="Opportunity" id="page" standardstylesheets="true" sidebar="false" showHeader="false">
+    
+    <script>
+    function test(){
+        var elem = document.querySelector('#outputOpportunity').style.display;
+        if(elem == 'block'){
+            document.querySelector('#outputOpportunity').style.display = 'none';
+            document.querySelector('#inputOpportunity').style.display = 'block';
+            document.querySelector('#btns').style.display = 'block';
+            document.querySelector('#editBtn').style.display = 'none';
+            
+        }else{
+            document.querySelector('#outputOpportunity').style.display = 'block';
+            document.querySelector('#inputOpportunity').style.display = 'none';
+            document.querySelector('#btns').style.display = 'none';
+            document.querySelector('#editBtn').style.display = 'block';
+        }
+    }
+    
+    </script>
+    <apex:form id="form">
+        <apex:pageBlock id="block">
+            <center>
+                <div id="btns" style="display:none;">
+                    <apex:commandButton action="{!save}" id="saveRecord" value="Save Records" />
+                    <apex:commandButton action="{!cancel}" id="cancelRecord" value="Cancel"/>
+                </div>
+                
+                <div id="editBtn" style="display:block;">
+                    <apex:commandButton value="Edit" rerender="block" onclick="javascript:test();return false"/>
+                </div>
+            </center>
+            <apex:pageMessages />
+            
+            <div id="outputOpportunity" class="divhover" style="display:block;">
+                <apex:pageBlockSection columns="2" id="oppPage" title="Opportunity: {!Opportunity.Name} ">
+                    <apex:outputText value="{!Opportunity.Name}"/>
+                    <apex:outputField value="{!Opportunity.Account.Name}"/>
+                    <apex:outputField value="{!Opportunity.StageName}" />
+                    <apex:outputField value="{!Opportunity.LeadSource}" />
+                    <apex:outputField value="{!Opportunity.Type}" />
+                    <apex:outputField value="{!Opportunity.Amount}" />
+                    <apex:outputField value="{!Opportunity.Description}" />
+                    <apex:outputField value="{!Opportunity.TotalOpportunityQuantity}" />
+                </apex:pageBlockSection>
+            </div>
+            
+            <div id="inputOpportunity" style="display:none;">
+                <apex:pageBlockSection columns="2" id="opportunityPage" title="Opportunity: {!Opportunity.Name} ">
+                    <apex:outputText value="{!Opportunity.Name}"/>
+                    <apex:inputField value="{!Opportunity.Account.Name}"/>
+                    <apex:inputField value="{!Opportunity.StageName}" />
+                    <apex:inputField value="{!Opportunity.LeadSource}" />
+                    <apex:inputField value="{!Opportunity.Type}" />
+                    <apex:inputField value="{!Opportunity.Amount}" />
+                    <apex:inputField value="{!Opportunity.Description}" />
+                    <apex:inputField value="{!Opportunity.TotalOpportunityQuantity}" />
+                </apex:pageBlockSection>
+            </div>
+            
+        </apex:pageBlock>
+        <apex:pageblock >
+            <apex:pageBlockSection title="Opportunity Products">
+                <apex:pageBlockTable value="{!Opportunity.OpportunityLineItems}" var="opportunityLineItem" style="position:absolute;">
+                    <apex:column value="{!opportunityLineItem.Name}"/>
+                    <apex:column value="{!opportunityLineItem.Quantity}" />
+                    <apex:column value="{!opportunityLineItem.UnitPrice}"/>
+                    <apex:column value="{!opportunityLineItem.Discount}" />
+                    <apex:column value="{!opportunityLineItem.TotalPrice}"/>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

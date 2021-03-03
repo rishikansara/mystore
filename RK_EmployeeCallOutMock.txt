@@ -1,0 +1,38 @@
+@isTest
+global class RK_EmployeeCallOutMock implements HttpCalloutMock {
+    // Implement this interface method
+    global HTTPResponse respond(HTTPRequest request) {
+        // Create a fake response
+        HttpResponse response = new HttpResponse();
+        response.setHeader('Content-Type', 'application/json');
+        
+        //this is for create single employee
+        if(request.getEndpoint() == 'callout:New_Hires/api/v3/employee' && request.getMethod() == 'POST'){
+            response.setBody('{"status":"success","message":"Inserted Employee","id":"1"}');
+            response.setStatusCode(200);
+            return response;   
+        }
+        
+        //this is for create multiple employees
+        if(request.getEndpoint() == 'callout:New_Hires/api/v3/employees' && request.getMethod() == 'POST'){
+            response.setBody('{"status":"success","message":"Inserted Employee","id":"1"}');
+            response.setStatusCode(200);
+            return response; 
+        }
+        
+        //this is for get all employees
+        if(request.getEndpoint() == 'callout:New_Hires/api/v3/employees' && request.getMethod() == 'GET'){
+            response.setBody('[{"_id":"1","name":"Employee Testing","phone":"91752465232","hire_date":"05/29/2018","position":"dba","functional_area":"Information Technology","location":"Ahmedabad","type":"Full Time","_user":"6012859f5f396a00148ff1d9","email":"mary@jane.com"}]');
+            response.setStatusCode(200);
+            return response;
+        }
+        
+        //this is for get employee using id
+        if(request.getEndpoint() == 'callout:New_Hires/api/v3/employees/1' && request.getMethod() == 'GET'){
+            response.setBody('{"_id":"1","name":"Employee Testing","phone":"91752465232","hire_date":"05/29/2018","position":"dba","functional_area":"Information Technology","location":"Ahmedabad","type":"Full Time","_user":"6012859f5f396a00148ff1d9","email":"mary@jane.com"}');
+            response.setStatusCode(200);
+            return response;
+        }
+        return null;
+    }
+}

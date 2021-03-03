@@ -1,0 +1,145 @@
+global class RK_EmployeeCallOut {
+    
+   	//Create Single Employee
+	public static HttpResponse createSingleEmployee(wrapperClass singleEmployee) {
+        try{
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            HttpResponse response = new HttpResponse();
+            
+            request.setEndpoint('callout:New_Hires/api/v3/employee');
+            request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+            request.setMethod('POST');
+            String jsonSer = JSON.serialize(singleEmployee);
+            request.setBody(jsonSer);
+            response = http.send(request);
+            
+            // If the request is successful, parse the JSON response.
+            if (response.getStatusCode() == 200) {
+                Map<String, Object> results = (Map<String,Object>) JSON.deserializeUntyped(response.getBody());
+                system.debug('results::- '+results);
+                System.debug('The status code: ' + response.getStatusCode() + ' ' + response.getStatus() + ' '+response);
+                Object employeeId = results.get('id');
+                system.debug('employeeId:-- '+employeeId);
+                return response;
+            } else {
+                System.debug('The status code and response not expected: ' + response.getStatusCode() + ' ' + response.getStatus() + ' '+response);
+                return response;
+            }
+        }catch(System.CalloutException e){
+            System.debug('@@@Error-' + e.getMessage()); 
+            return null;
+        }
+    }
+    
+    //Create Multiple Employees
+    public static HttpResponse createMultipleEmployee(List<wrapperClass> multipleEmployees) {
+        try{
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            HttpResponse response = new HttpResponse();
+            
+            request.setEndpoint('callout:New_Hires/api/v3/employees');
+            request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+            request.setMethod('POST');
+            String jsonSer = JSON.serialize(multipleEmployees);
+            request.setBody(jsonSer);
+            response = http.send(request);
+            
+            // If the request is successful, parse the JSON response.
+            if (response.getStatusCode() == 200) {
+                Map<String, Object> results = (Map<String,Object>) JSON.deserializeUntyped(response.getBody());
+                List<Object> employeeList = (List<Object>)results.get('data');
+                System.debug('The status code: ' + response.getStatusCode() + ' ' + response.getStatus() + ' '+response);
+                System.debug('employeeList:- '+employeeList);
+                return response;
+            } else {
+                System.debug('The status code returned was not expected: ' + response.getStatusCode() + ' ' + response.getStatus() + ' '+response);
+                return response;
+            }
+        }catch(System.CalloutException e){
+            System.debug('@@@Error-' + e.getMessage()); 
+            return null;
+        }
+    }
+    
+    //Get Particular Employee using id 
+    public static HttpResponse getEmployee(String employeeId){
+        try{
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            HttpResponse response = new HttpResponse();
+            
+            request.setEndpoint('callout:New_Hires/api/v3/employees/'+employeeId);
+            request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+            request.setMethod('GET');
+            response = http.send(request);
+            
+            if (response.getStatusCode() == 200) {
+                System.debug('response.getBody():::--- '+response.getBody());
+                wrapperClass employee = (wrapperClass)JSON.deserialize(response.getBody(), wrapperClass.class);
+                System.debug('employee::- '+employee);
+                return response;
+            }else{
+                system.debug('Status code:- '+response.getStatusCode()+' '+response.getBody());
+                return response;
+            }
+            
+        }catch(System.CalloutException e){
+            System.debug('@@@Error-' + e.getMessage()); 
+            return null;
+        }
+    }
+    
+    //GetAllEmployees
+    public static HttpResponse getEmployees(){
+        try{
+            Http http = new Http();
+            HttpRequest request = new HttpRequest();
+            HttpResponse response = new HttpResponse();
+            
+            request.setEndpoint('callout:New_Hires/api/v3/employees');
+            request.setHeader('Content-Type', 'application/json;charset=UTF-8');
+            request.setMethod('GET');
+            response = http.send(request);
+            
+            if (response.getStatusCode() == 200) {
+                List<wrapperClass> employeeList = (List<wrapperClass>)JSON.deserialize(response.getBody(), List<wrapperClass>.class);
+                System.debug('employee::- '+employeeList);
+                return response;
+            }else{
+                system.debug('Status code:- '+response.getStatusCode()+' '+response.getBody());
+                return response;
+            }
+        }catch(System.CalloutException e){
+            System.debug('@@@Error-' + e.getMessage());  
+            return null;
+        }
+    }
+    
+    // Wrapper class
+    global class wrapperClass{
+        public String name; 
+        public String phone; 
+        public String hire_date;  
+        public String position; 
+        public String location;
+        public String functional_area;
+        public String job_level;
+        public String type;
+        public String email;
+        
+        global wrapperClass(String name, String phone, String hire_date, String position, String location, String functional_area, String job_level, String type, String email){
+            this.name = name;
+            this.phone = phone;
+            this.hire_date = hire_date;
+            this.position = position;
+            this.location = location;
+            this.functional_area = functional_area;
+            this.job_level = job_level;
+            this.type = type;
+            this.email = email;
+        }
+        
+    }    
+}
