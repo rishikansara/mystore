@@ -1,0 +1,83 @@
+public class AnimalsCallouts {
+
+    public String requestLabel;
+    public String result {get;set;}
+    public Boolean isShow {get;set;}
+    public Boolean labelShow {get;set;}
+    public List<Object> animals {get;set;}
+    public List<animalwrapper> accountList {get;set;}
+    public List<animalwrapper> selectedAnimals {get;set;}
+    public List<animalwrapper> newAnimals {get;set;}
+    public String selectedValue { get; set; }
+    public String selectedValue1 { get; set; }
+
+    
+    public AnimalsCallouts(){ 
+        animals =new List<Object>();
+        isShow = true;
+        labelShow = false;
+        accountList = new List<animalwrapper>();
+        selectedAnimals = new List<animalwrapper>();
+        newAnimals = new List<animalwrapper>();
+        makeGetCallout();
+            
+    }
+
+    public Object  makeGetCallout() {
+        Continuation con = new Continuation(40);
+        con.continuationMethod='processResponse';
+    
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('https://th-apex-http-callout.herokuapp.com/animals');
+        request.setMethod('GET');
+    
+        this.requestLabel = con.addHttpRequest(request);
+       	HttpResponse response = new HttpResponse();
+        response = http.send(request);
+        
+        if (response.getStatusCode() == 200) {
+            this.result = response.getBody();
+            Map<String, Object> results = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+            animals = (List<Object>) results.get('animals');
+            for(Object obj : animals){
+                accountList.add(new animalwrapper(obj));
+            }
+        }
+        return null;
+    }
+    
+    public void selectedRadioVal(){
+        system.debug('Selected value is:---- ' + selectedValue);
+    }
+    
+    public void submitVal(){
+        labelShow = true;
+        system.debug('labelShow:---- ' + labelShow);
+        selectedValue1 = selectedValue;
+        system.debug('selectedValue1:---- ' + selectedValue1);
+    }
+    
+    public void selectedVal(){
+        isShow = true;
+        selectedAnimals.clear();
+        for(animalwrapper accwrapper : accountList){  
+            if(accwrapper.selected == true){
+                selectedAnimals.add(accwrapper);
+            }
+        }
+    }
+    
+    
+    public class animalwrapper
+    {
+        public Object ani{get; set;}
+        public Boolean selected {get; set;}
+        public animalwrapper(Object a)
+        {
+            ani = a;
+            selected = false;
+        }
+    }
+        
+}

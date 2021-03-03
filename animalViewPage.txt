@@ -1,0 +1,39 @@
+<apex:page controller="AnimalsCallouts" showHeader="false">
+    <script>
+       function getRadioSelect(){
+           const t = document.querySelectorAll('input[name="group1"]');
+           for (const rb of t) {
+                if (rb.checked) {
+                    selectedValue = rb.value;
+                    getContactIdActionFun(selectedValue);
+                    break;
+                }
+            }
+       }
+    </script>
+	<apex:form >
+        <p>
+            This is Visualforce Page 2
+        </p>
+         <apex:actionFunction name="getContactIdActionFun" action="{!selectedRadioVal}" reRender="resultPanel" >
+            <apex:param name="selectedContact" assignTo="{!selectedValue}" value=""  />
+        </apex:actionFunction>
+
+	<apex:pageBlock >
+        <apex:outputPanel rendered="{!isShow}">
+            <apex:pageBlockSection >
+            <apex:pageBlockTable value="{!selectedAnimals }" var="an">
+                <apex:column >
+                    <input type="radio" name="group1" onchange="getRadioSelect()" value="{!an.ani}" />
+                </apex:column>
+                 <apex:column value="{!an.ani}"/>
+            </apex:pageBlockTable>
+		</apex:pageBlockSection>
+            </apex:outputPanel>
+        <div style="margin-left:100px">
+            <apex:commandButton action="{!submitVal}" value="Submit" />
+        </div>
+	</apex:pageBlock>
+	</apex:form>
+    
+</apex:page>

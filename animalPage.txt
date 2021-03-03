@@ -1,0 +1,39 @@
+<apex:page controller="AnimalsCallouts" showHeader="false">
+    <style>
+        #col1,#col2{width:49%;display:inline-block;}
+    </style>
+    
+    <div id="col1">
+    <apex:form >
+        <p>
+            This is Visualforce Page 1
+        </p>
+        <apex:pageBlock >
+          <apex:PageBlockSection id="detail">
+                        <apex:pageBlockTable value="{!accountList }" var="an" id="accTable" styleClass="calculateState1">
+                     		<apex:column >
+                         		<apex:inputCheckbox id="checkedone"  value="{!an.selected}">
+                         		</apex:inputCheckbox>
+                     		</apex:column>
+                     		<apex:column >
+                                <apex:outputText value="{!an.ani}" id="state" styleClass="calculateState"/>
+                            </apex:column>
+                 		</apex:pageBlockTable>
+            	</apex:PageBlockSection>
+            <div style="margin-left:100px">
+                <apex:commandButton action="{!selectedVal}" value="Next" reRender="page2"/> 
+            </div>
+        </apex:pageBlock>
+        <apex:outputPanel id="radioBTTn" rendered="{!labelShow}">
+            <apex:outputText value="{!selectedValue1}"></apex:outputText><br/>
+        </apex:outputPanel>
+    </apex:form>
+   </div>
+   
+    <div id="col2">
+        <apex:outputPanel id="page2" rendered="{!isShow}">
+            <apex:include pageName="animalViewPage"/>
+        </apex:outputPanel>
+    </div>
+
+</apex:page>
