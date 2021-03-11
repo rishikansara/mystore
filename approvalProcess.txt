@@ -1,0 +1,77 @@
+public class approvalProcess {
+    public static boolean someValue = true;
+    public static void myFun(){
+        Map<String,String> accMap = new Map<String,String>();
+        Map<Id,String> totalMap = new Map<Id,String>(); //duplicate actors
+        Map<Id,ProcessInstanceWorkitem> pendingItems = new Map<Id,ProcessInstanceWorkitem>();
+        List<ProcessInstanceWorkitem> approvalPro = [SELECT ProcessInstance.ProcessDefinitionId,ProcessInstance.Status,
+                                                     ProcessInstance.CreatedDate,ElapsedTimeInDays,Actor.email,ProcessInstance.TargetObjectId
+                                                     FROM ProcessInstanceWorkitem
+                                                     WHERE ProcessInstance.Status ='Pending' AND
+                                                     ProcessInstance.ProcessDefinition.Name = 'Demo'];
+        
+        for(ProcessInstanceWorkitem pi : approvalPro){
+            totalMap.put(pi.ProcessInstance.TargetObjectId,pi.Actor.email);
+            pendingItems.put(pi.ProcessInstance.TargetObjectId, pi);
+            if(!accMap.containsKey(pi.Actor.email)){
+                accMap.put(pi.Actor.email, pi.ProcessInstance.TargetObjectId);
+                totalMap.remove(pi.ProcessInstance.TargetObjectId);
+            } else{
+                totalMap.put(pi.ProcessInstance.TargetObjectId,pi.Actor.email);
+                totalMap.put(accMap.get(pi.Actor.email),pi.Actor.email);
+                accMap.remove(pi.Actor.email);
+                
+            }
+        }
+        
+        system.debug('accMap::- '+accMap);
+        system.debug('totalMap::- '+totalMap);
+          
+       	List<Account> creditList = [SELECT Id,Name FROM Account WHERE Id IN:totalMap.keySet()];
+       	List<Account> creditList1 = [SELECT Id,Name FROM Account WHERE Id IN:accMap.Values()];
+        
+        //List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
+        //Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+        Map<string,string> emailHtmlBody = new Map<string,string>();
+       
+        String prebody = '';
+        String prebody1 = '';
+        List<String> emailList = new List<String>();
+        if(creditList.size()>0){
+            List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
+        	Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+            email.setSubject('Reminder Of pending approvals of the record');
+            for(Account acc : creditList){
+                prebody+= '<br/><br/>-------------------------------------------<br/><br/>';
+                prebody+= '<a href=https://'+ System.URL.getSalesforceBaseUrl().getHost() +'/p/process/ProcessInstanceWorkitemWizardStageManager?id='+pendingItems.get(acc.Id).Id+'>Click here</a> to log in and approve or reject.<br/>';
+                prebody+= 'Account Name: '+acc.Name+'<br/>';
+                if(!emailList.contains(totalMap.get(acc.Id))){
+                    emailList.add(totalMap.get(acc.Id));
+                    email.setToAddresses(emailList);
+                }
+            }
+            email.setHtmlBody(prebody);
+            mails.add(email);
+            system.debug('emailList::- '+emailList);
+            if(someValue){
+                system.debug('someValue::- '+someValue);
+                Messaging.sendEmail(mails);
+                someValue = false;
+            }
+        }
+        if(creditList1.size()>0){
+            List<Messaging.SingleEmailMessage> mails = new List<Messaging.SingleEmailMessage>();
+        	Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+            for(Account acc : creditList1){
+                prebody1+= '<br/><br/>-------------------------------------------<br/><br/>';
+                prebody1+= '<a href=https://'+ System.URL.getSalesforceBaseUrl().getHost() +'/p/process/ProcessInstanceWorkitemWizardStageManager?id='+pendingItems.get(acc.Id).Id+'>Click here</a> to log in and approve or reject.<br/>';
+                prebody1+= 'Account Name: '+acc.Name+'<br/>';
+                email.setSubject('Reminder Of pending approvals of the record');
+                email.setToAddresses(new list<String>(accMap.keySet()));
+                email.setHtmlBody(prebody1);
+                mails.add(email);
+            }
+            Messaging.sendEmail(mails);
+        }
+    }
+}
