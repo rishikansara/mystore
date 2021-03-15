@@ -1,0 +1,27 @@
+public class RK_CustomContactCreationController {
+    public Contact contact{get;set;}
+    
+    public RK_CustomContactCreationController(){
+        contact = new Contact();
+    }
+    
+    public void save(){
+        try{
+            insert contact;
+        }catch(Exception e){
+            ApexPages.addmessage(new ApexPages.message(ApexPages.severity.ERROR,'Insert failed.'));
+            return;
+        }
+        contact = new Contact();
+    }
+    
+    public PageReference clear(){
+        PageReference pageRef = new PageReference(System.currentPageReference().getURL());
+        pageRef.setRedirect(false);
+        return pageRef;
+    }
+    
+    public List<Account> getaccounts(){
+        return [SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10];
+    }
+}
