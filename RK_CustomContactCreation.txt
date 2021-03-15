@@ -1,0 +1,56 @@
+<apex:page Controller="RK_CustomContactCreationController" standardstylesheets="true">
+    
+    <apex:form >        
+        <apex:pageMessages id="errmsg"/>
+        
+        <apex:pageBlock id="block">
+            
+            <style>
+                .bPageBlock .requiredInput .requiredBlock{background-color: #F6FBF6;}
+                .requiredInput .requiredBlock::after { display: block; content: "*"; font-size: 1.5em; font-weight: bold; color: #c00; margin-left: -4px; margin-top: -2px; }
+            </style>
+            
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!save}" value="Save"/>
+                <apex:commandButton action="{!clear}" value="Clear" immediate="true"/>
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection columns="2" id="contactSection" title="Create a Contact" >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="First Name"/>
+                    <apex:outputPanel layout="block" styleClass="requiredInput" >
+                        <div class="requiredBlock"></div>
+                        <apex:inputText value="{!contact.FirstName}" required="true"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:inputText value="{!contact.LastName}"/>
+                <apex:inputField value="{!contact.AccountId}"/>
+                <apex:inputText value="{!contact.Phone}"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Email"/>
+                    <apex:outputPanel layout="block" styleClass="requiredInput" >
+                        <div class="requiredBlock"></div>
+                        <apex:inputText value="{!contact.Email}" required="true"/>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:inputText value="{!contact.MobilePhone}"/>
+                <apex:inputText value="{!contact.MailingStreet}"/>
+                <apex:inputText value="{!contact.MailingCity}"/>
+                <apex:inputText value="{!contact.MailingState}"/>
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+        
+        <apex:pageblock >
+            <apex:pageBlockSection columns="1" id="accountSection" title="Recent accounts">
+                <apex:pageBlockTable value="{!accounts}" var="acc">
+                    <apex:column ><apex:facet name="header">Id</apex:facet><apex:outputLink value="/{!acc.Id}" target="_blank">{!acc.Id}</apex:outputLink></apex:column>
+                    <apex:column ><apex:facet name="header">Name</apex:facet><apex:outputText value="{!acc.Name}"/></apex:column>
+                    <apex:column ><apex:commandButton action="/{!acc.id}" value="View" id="view_this_object" immediate="true"/></apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+        </apex:pageblock>
+        
+    </apex:form>
+    
+</apex:page>
