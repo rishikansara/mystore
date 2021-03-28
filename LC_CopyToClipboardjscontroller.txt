@@ -1,0 +1,6 @@
+({
+	copyText : function(component, event, helper) {
+		var copiedInput = component.find('input_text').get('v.value');
+        helper.copyTheText(component, event, copiedInput);
+	}
+})
