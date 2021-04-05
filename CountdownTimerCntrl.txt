@@ -1,0 +1,37 @@
+public class CountdownTimerCntrl {
+    @AuraEnabled
+    public static Case fetchCase(String recordId){
+        Case ITTC3case = new Case();
+        try{
+            ITTC3case = [Select Id, Status, Time_Left__c, total_time_left__c, CreatedDate, LastModifiedDate From Case
+                         Where Id = :recordId And CreatedDate = TODAY];
+            
+            return ITTC3case;
+            
+        }
+        catch(Exception ex){
+            System.debug('Exception : '+ex.getMessage());
+            return null;
+        }
+        
+    }
+    @AuraEnabled
+    public static void saveTimeleft(String recordId, String timeleft){
+        System.debug('timeleft : '+timeleft);
+        
+        try{
+            if(recordId != null || recordId != ''){
+                Case  ITTC3case = [Select Id, Status, Time_Left__c,total_time_left__c From Case Where Id = :recordId];
+                ITTC3case.total_time_left__c = timeleft;
+                update ITTC3case;
+            }
+            
+        }
+        catch(Exception ex){
+            System.debug('Exception : '+ex.getMessage());
+            
+        }
+    }
+    
+    
+}

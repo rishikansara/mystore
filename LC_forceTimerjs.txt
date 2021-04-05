@@ -1,0 +1,70 @@
+({
+    doInit : function(component, event, helper) {
+        component.set("v.countDownContinue",true);
+        
+        let action = component.get("c.fetchCase");
+        action.setParams({
+            "recordId" : component.get("v.recordId")
+        });
+        
+        action.setCallback(this,function(response){
+            let state = response.getState();
+            if(state == 'SUCCESS'){
+                var result = response.getReturnValue();
+                console.log('result:- '+JSON.stringify(result));
+                if(result != null){
+                    component.set("v.caseRec", result);
+                    var Status = component.get("v.caseRec").Status;
+                    
+                    var timezone = $A.get("$Locale.timezone");
+                    var mydate = new Date().toLocaleString("en-US", {timeZone: timezone});
+                    
+                    var createdTime = new Date(component.get("v.caseRec").CreatedDate).toLocaleString("en-US", {timeZone: timezone});
+                    
+                    var hoursLeft = new Date(mydate).getHours() - new Date(createdTime).getHours();
+                    hoursLeft = hoursLeft < 0 ? hoursLeft * -1 : hoursLeft;
+                    var minutesLeft = new Date(mydate).getMinutes() - new Date(createdTime).getMinutes();
+                    minutesLeft = minutesLeft < 0 ? minutesLeft * -1 : minutesLeft;
+                    var secondsLeft = new Date(mydate).getSeconds() - new Date(createdTime).getSeconds();
+                    secondsLeft = secondsLeft < 0 ? secondsLeft * -1 : secondsLeft;
+                    
+                    if(hoursLeft == 0 && minutesLeft == 0 && Status == 'New'){
+                        component.set("v.ltngTimmer","08:00:00");
+                        helper.setStartTimeOnUI(component,helper);
+                    }else if(((hoursLeft != 0 && hoursLeft <= 8) || minutesLeft != 0) && Status == 'New' && component.get("v.caseRec").total_time_left__c == null){
+                        hoursLeft = hoursLeft > 0 ? 8 - hoursLeft : 7;
+                        minutesLeft = minutesLeft > 0 ? 60 - minutesLeft : minutesLeft;
+                        secondsLeft = secondsLeft > 0 ? 60 - secondsLeft : secondsLeft;
+                        var totalTime = hoursLeft+":"+minutesLeft+":"+secondsLeft;
+                        component.set("v.ltngTimmer", totalTime.toString());
+                        helper.setStartTimeOnUI(component,helper);
+                    }else if(Status == 'Working' && component.get("v.caseRec").total_time_left__c != null){
+                        component.set("v.ltngTimmer", component.get("v.caseRec").total_time_left__c);
+                        helper.setStopTimeOnUI(component,helper);
+                    }
+                }
+            }
+        });
+        $A.enqueueAction(action);
+    },
+    
+    recordUpdated : function(component, event, helper) {
+        //console.log('Fields that are dsfkjdchanged: ' +changedFields.Status.oldValue);
+        //console.log('Fields that are dsfkjdchanged: ' +changedFields.Status.value);
+        var changeType = event.getParams().changeType;
+        
+        if (changeType === "ERROR") { }
+        else if (changeType === "LOADED") {  }
+            else if (changeType === "REMOVED") {  }
+                else if (changeType === "CHANGED") { 
+                    var changedFields = event.getParams().changedFields;
+                    if(changedFields.Status != null && changedFields.Status.value == 'New'){
+                        helper.setStartTimeOnUI(component,helper);
+                    }else if(changedFields.Status != null && changedFields.Status.value == 'Working'){
+                        helper.setStopTimeOnUI(component,helper);
+                    }
+                    component.find("forceRecord").reloadRecord();
+                }
+    },
+    
+})
