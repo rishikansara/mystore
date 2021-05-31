@@ -1,0 +1,110 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global" >
+	<aura:html tag="style">
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }       
+        .slds-modal__content{
+        overflow-y: scroll !important;
+        overflow-x: scroll !important;
+        height : 100% !important;
+        }
+        
+        .slds-modal__container{ 
+        height : 100% !important; 
+        } 
+        .modal-body{ 
+        height : 70vh !important; 
+        max-height: 100vh !important; 
+        } 
+        .slds-modal__footer{ 
+        display: inline !important; 
+        
+    </aura:html>
+	<div class="slds-scrollable_x" style="height:5rem;width:24rem">    
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <!-- ###### MODAL BOX HEADER Start ######-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closeModel }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Add Case Records</h2>
+                    </header>
+                    
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <!--Table Part-->           
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer"> 
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate">S.No</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Product</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Module Name</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Software Version</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Device Make / Model</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Issue Category</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Ticket Category</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Value">Description</div>
+                                    </th>
+                                </tr>
+                            </thead>   
+                            <tbody>       
+                                <aura:iteration items="{!v.subCase}" var="item" indexVar="index">
+                                    <!--<c:dynamicRowItem subCaseInstance="{!item}" rowIndex="{!index}" />-->
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                        <br/>
+                    </div>
+                    <!--Save Button which is call Save js function on click --> 
+                    <!--<button class="slds-button slds-button_brand" onclick="{!c.Save}">Save</button>-->
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" 
+                                          label="Cancel"
+                                          title="Cancel"
+                                          onclick="{! c.closeModel }"/>
+                        <lightning:button variant="brand" 
+                                          class="slds-button slds-button_brand"
+                                          label="Save"
+                                          title="Save"
+                                          onclick="{! c.Save }"/>
+                    </footer>
+                </div>
+            </section>
+    </div>
+    
+</aura:component>
