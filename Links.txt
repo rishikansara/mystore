@@ -1,7 +1,0 @@
-https://www.sfdc-lightning.com/2019/10/how-to-call-batch-apex-class-from-apex.html
-
-
-https://stackoverflow.com/questions/46083348/refused-to-display-in-a-frame
-
-https://stackoverflow.com/questions/49804998/page-wont-load-through-iframe
-
