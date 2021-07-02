@@ -1,0 +1,399 @@
+import { LightningElement,track,api,wire } from 'lwc';
+import { getRecord,getFieldValue } from 'lightning/uiRecordApi';
+import orgInformation from '@salesforce/apex/timerLwcController.orgInformation';
+import updateCaseRecord from '@salesforce/apex/timerLwcController.updateCaseRecord';
+export default class Timerlwc extends LightningElement {
+		@track record;
+		@track name = '';
+		@track status = '';
+		@track timeLef = '';
+		timeIntervalInstance;
+		@track timeVal = '0:0:0';
+		@track orgRecord;
+		@track createdDateTimeVal;
+		@track modifiedDateTimeVal;
+		@track createdTime;
+		@track usaCurrentTime;
+		@track error;
+	
+		@api recordId;
+		
+		// Wire a record.
+    @wire(getRecord, { recordId: '$recordId', fields: ['Case.Status','Case.CreatedDate','Case.Time_Left__c','Case.Date_Time_For_Clock__c']})
+		wiredGetRecord(value) {
+				const { data, error } = value;
+				if (data) {
+						console.log('data::- '+JSON.stringify(data));
+						this.record = data;
+            this.status = data.fields.Status.value;
+						this.timeLef = data.fields.Time_Left__c.value;
+						this.createdDateTimeVal = data.fields.CreatedDate.displayValue;
+						this.modifiedDateTimeVal = data.fields.Date_Time_For_Clock__c.displayValue;
+						
+						orgInformation()
+								.then(result => {
+								this.orgRecord = result;
+								console.log('CreatedDate time::- '+new Date(this.createdDateTimeVal).getHours());
+								console.log('Lastmodified Date hours::-'+new Date(this.modifiedDateTimeVal).getHours());
+
+								let date = new Date();
+								this.usaCurrentTime = date.toLocaleString("en-US", {timeZone: this.orgRecord.TimeZoneSidKey});
+								console.log('Lastmodified Date hours::-'+new Date(this.modifiedDateTimeVal).getHours());
+								//if((new Date(this.createdDateTimeVal).getFullYear()==new Date(this.usaCurrentTime).getFullYear()) && ((new Date(this.createdDateTimeVal).getMonth()+1)==(new Date(this.usaCurrentTime).getMonth()+1)) && (new Date(this.createdDateTimeVal).getDate()==new Date(this.usaCurrentTime).getDate())){	
+										if(this.timeLef == null){
+												this.stop();
+												switch (this.status) {
+														case 'New':
+																this.timeVal = '8:0:0';
+																this.start();
+																break;
+														case 'Cosmetic':
+																this.timeVal = '8:0:0';
+																this.start();
+																break;
+														case 'Low':
+																this.timeVal = '8:0:0';
+																this.start();
+																break;
+														case 'Moderate':
+																this.timeVal = '4:0:0';
+																this.start();
+																break;
+														case 'High':
+																this.timeVal = '4:0:0';
+																this.start();
+																break;
+														case 'Critical':
+																this.timeVal = '2:0:0';
+																this.start();
+																break;
+														default:
+																this.timeVal = '';
+																break;
+												}
+										}else if(this.timeLef == '00:00:00'){
+												return null;
+										}else{
+												console.log('this.timeLef::-'+this.timeLef);
+												let sjd = this.timeLef;
+												let ss = sjd.split(":");
+												this.tempHours = new Date(this.usaCurrentTime).getHours() - new Date(this.modifiedDateTimeVal).getHours();
+												this.tempHours = this.tempHours < 0 ? this.tempHours * -1 : this.tempHours;
+												this.finalTempHours = this.tempHours < ss[0] ? ss[0] - this.tempHours : 0;
+												
+												if(this.finalTempHours != 0){
+														this.tempMinute = new Date(this.usaCurrentTime).getMinutes() - new Date(this.modifiedDateTimeVal).getMinutes();
+														this.finalTempMinutes = ss[1] - this.tempMinute;
+														this.finalTempMinutes = this.finalTempMinutes < 0 ? this.finalTempMinutes *-1 : this.finalTempMinutes;
+														console.log('this.finalTempMinutes::- '+this.finalTempMinutes);
+
+														this.tempSecond = new Date(this.usaCurrentTime).getSeconds() - new Date(this.modifiedDateTimeVal).getSeconds();
+														this.finalTempSeconds = ss[2] - this.tempSecond;
+														this.finalTempSeconds = this.finalTempSeconds < 0 ? this.finalTempSeconds *-1 : this.finalTempSeconds;
+														console.log('this.finalTempSeconds::- '+this.finalTempSeconds);
+														
+														switch (this.status) {
+																case 'New':
+																		if(this.finalTempHours < 8 ){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																case 'Cosmetic':
+																		if(this.finalTempHours < 8){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																case 'Low':
+																		if(this.finalTempHours < 8){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																case 'Moderate':
+																		if(this.finalTempHours < 4){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																case 'High':
+																		if(this.finalTempHours < 4){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																case 'Critical':
+																		if(this.finalTempHours < 2){
+																				this.timeVal = this.finalTempHours+':'+this.finalTempMinutes+':'+this.finalTempSeconds;
+																				this.start();
+																		}
+																		break;
+																default:
+																		this.timeVal = '';
+																		break;
+														}
+												}
+										}
+								//}
+
+						}).catch(error => {
+								this.error = error;
+						});	
+				}else if(error) {
+						this.record = undefined;
+						this.error = error;
+				}
+		}
+		
+		connectedCallback(){
+				if (performance.navigation.type == 1) {
+						console.info( "This page is reloaded" );
+				} else {
+						console.info( "This page is not reloaded");
+				}
+				
+				window.addEventListener('beforeunload', (event) => {
+						updateCaseRecord({reco: this.recordId, timeLef: this.timeVal});
+						event.preventDefault();
+						event.returnValue = 'Dude, are you sure you want to leave? Think of the kittens!';
+						
+				});
+		}		
+		
+		renderedCallback() {
+				let sjd = this.timeVal;
+				let ss = sjd.split(":");
+				if(this.status == 'New' || this.status == 'Cosmetic' || this.status == 'Low'){
+						switch (ss[0]) {
+								case '06':
+										this.recalc(87.5);
+										break;
+
+								case '05':
+										this.recalc(75);
+										break;
+										
+								case '04':
+										this.recalc(62.5);
+										break;
+
+								case '03':
+										this.recalc(50);
+										break;
+										
+								case '02':
+										this.recalc(37.5);
+										break;
+										
+								case '01':
+										this.recalc(35);
+										break;
+										
+								case '00':
+										if(ss[1] == 0 && ss[2] == 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(100);
+										}else if(ss[1] == 0 && ss[2] <= 25 && ss[2] > 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(ss[2]);
+										}else{
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(25);
+										}
+										break;
+						}	
+				}else if(this.status == 'Moderate' || this.status == 'High'){
+						switch (ss[0]) {
+								case '02':
+										this.recalc(75);
+										break;
+										
+								case '01':
+										this.recalc(50);
+										break;
+										
+								case '00':
+										if(ss[1] == 0 && ss[2] == 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(100);
+										}else if(ss[1] == 0 && ss[2] <= 25 && ss[2] > 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(ss[2]);
+										}else{
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(25);
+										}
+										break;
+						}	
+				}else if(this.status == 'Critical'){
+						switch (ss[0]) {
+								case '00':
+										if(ss[1] == 0 && ss[2] == 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(100);
+										}else if(ss[1] == 0 && ss[2] <= 50 && ss[2] > 0){
+												let progressCircle = this.template.querySelector(".progress");
+												progressCircle.style.stroke = "red";
+												this.recalc(ss[2]);
+										}else{
+												this.recalc(50);
+										}
+										break;	
+						}
+				}
+		}
+		
+		recalc(ppEr){
+				let progressCircle = this.template.querySelector(".progress");
+				let radius = progressCircle.r.baseVal.value;
+				let circum = radius * 2 * Math.PI;
+				progressCircle.style.strokeDasharray = circum;
+				this.setProgress(progressCircle,circum,ppEr);
+		}
+		
+		setProgress(circleVal,remcircum,percent){
+				switch (percent) {
+						case 50:
+								circleVal.style.stroke = "orange";
+								break;
+								
+						case 37.5:
+								circleVal.style.stroke = "orange";
+								break;
+								
+						case 35:
+								circleVal.style.stroke = "orange";
+								break;
+				}
+				circleVal.style.strokeDashoffset = remcircum - (percent/100) * remcircum;
+		}
+		
+    start() {
+        let parentThis = this;
+				let sjd = parentThis.timeVal;
+				let ss = sjd.split(":");
+				if(ss[0] == 0 && ss[1] == 0 && ss[2] == 0){
+						parentThis.timeVal = '00:00:00';
+						alert('Your Time Expired for '+this.status+ ' status');
+						return null;
+				}else{
+						let dt = new Date();
+						dt.setHours(ss[0]);
+						dt.setMinutes(ss[1]);
+						dt.setSeconds(ss[2]);
+
+						let dt2 = new Date(dt.valueOf() - 1000);
+						let temp = dt2.toTimeString().split(" ");
+						let ts = temp[0].split(":");
+
+						parentThis.timeVal = ts[0] + ":" + ts[1] + ":" + ts[2];
+						
+						this.timeIntervalInstance = setTimeout(() => {
+								this.start();
+						}, 1000);
+				}
+		}
+
+    stop() {
+        this.showStartBtn = true;
+        clearTimeout(this.timeIntervalInstance);
+    }
+}
+
+
+
+==========================================================================================================================
+
+<template>
+		<div style="background: white;padding: 20px;border-radius: 6px;">
+
+				<div class="circle-center">
+						<div class="base-timer">
+								<svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+										<g class="base-timer__circle">
+												<circle class="track" cx="50" value="90" cy="50" r="45" transform ="rotate(-90, 50,50)"></circle>
+												<circle class="progress" cx="50" value="90" cy="50" r="45" transform ="rotate(-90, 50,50)"></circle>
+										</g>
+								</svg>
+								<span id="base-timer-label" class="base-timer__label">{timeVal}</span>
+						</div>
+				</div>
+		</div>
+</template>
+
+==========================================================================================================================
+
+.dummyClass{color:black;}
+
+.circle-center {
+  box-sizing: border-box;
+  font-family: monospace;
+  display: grid;
+  place-items: center;
+ }
+
+.base-timer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.rishi {
+		position: relative;
+		width: 200px;
+		height: 200px;
+}
+
+/* scaleX(1) = CLOCKWISE, scaleX(-1) = ANTI-CLOCKWISE */
+.base-timer__svg {
+  transform: scaleX(1);
+}
+
+.base-timer__circle {
+  fill: none;
+  stroke: none;
+}
+
+.track {
+		stroke:grey;
+		stroke-width: 7px;
+		fill:none;
+}
+
+.progress {
+  stroke-width: 7px;
+  stroke: green;
+}
+
+.base-timer__path-remaining {
+  stroke-width: 7px;
+  stroke-linecap: round;
+  transform: rotate(90deg);
+  transform-origin: center;
+  transition: 1s linear all;
+  fill-rule: nonzero;
+  stroke: currentColor;
+}
+
+.base-timer__path-remaining.arc {
+  color: rgba(43, 212, 148, 0.973)
+}
+
+.base-timer__label {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 33px;
+}
